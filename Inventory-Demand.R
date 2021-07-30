@@ -1,16 +1,25 @@
-setwd("C:/Cursos/Razure-1/projeto2/Stock-Demand-Prediction")
+setwd("~/Documents/Stock-Demand-Prediction")
 library(tidyverse)
 library(data.table)
-df_comp <- read_csv("train.csv")
-
+df_comp <- fread("train.csv")
 head(df_comp)
 
-factors <- c("Semana", "Agencia_ID", "Canal_ID", "Ruta_SAK",
-             "Cliente_ID", "Producto_ID" , "NombreProducto")
+factors <- c("Agencia_ID", "Canal_ID", "Ruta_SAK",
+             "Cliente_ID", "Producto_ID")
 
 
-for(i in 1:length(factors)){
-  df_comp[,factors[i]] <- lapply(df_comp[,factors[i]], as.factor)
-}
 
-str(df_comp)
+df_comp[,factors] <- df_comp[,lapply(.SD,as.factor),.SDcol = factors]
+
+df_sample = sample_n(df_comp, nrow(df_comp)*0.05)
+
+rm(df_comp)
+  
+str(df_sample)
+
+df_sample%>% 
+  group_by(Semana)%>%
+  summarise(Demanda_Semanal = sum(Demanda_uni_equil))%>%
+  ggplot(aes(x = Semana, y = Demanda_Semanal))+
+  geom_line()+
+  ggtitle("Mudanca de Necessidade de Estoque")
